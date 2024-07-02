@@ -1,8 +1,9 @@
-from flask import jsonify
 from flask import jsonify, request
 
 from . import app, db
 from .models import Opinion
+from .views import random_opinion
+
 
 @app.route('/api/opinions/<int:id>/', methods=['GET'])
 def get_opinion(id):
@@ -12,14 +13,13 @@ def get_opinion(id):
 
 @app.route('/api/opinions/<int:id>/', methods=['PATCH'])
 def update_opinion(id):
-    data = request.get_json()
     opinion = Opinion.query.get_or_404(id)
-    opinion.title = data.get('title', opinion.title)
-    opinion.text = data.get('text', opinion.text)
-    opinion.source = data.get('source', opinion.source)
-    opinion.added_by = data.get('added_by', opinion.added_by)
+    opinion.title = request.json.get('title', opinion.title)
+    opinion.text = request.json.get('text', opinion.text)
+    opinion.source = request.json.get('source', opinion.source)
+    opinion.added_by = request.json.get('added_by', opinion.added_by)
     db.session.commit()
-    return jsonify({'opinion': opinion.to_dict()}), 200
+    return jsonify({'opinion': opinion.to_dict()}), 201
 
 
 @app.route('/api/opinions/<int:id>/', methods=['DELETE'])
@@ -45,3 +45,9 @@ def add_opinion():
     db.session.add(opinion)
     db.session.commit()
     return jsonify({'opinion': opinion.to_dict()}), 201
+
+
+@app.route('/api/get-random-opinion/', methods=['GET'])
+def get_random_opinion():
+    opinion = random_opinion()
+    return jsonify({'opinion': opinion.to_dict()}), 200

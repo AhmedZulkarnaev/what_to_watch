@@ -8,12 +8,19 @@ from .models import Opinion
 
 
 @app.route('/')
-def index_view():
+def random_opinion():
     quantity = Opinion.query.count()
-    if not quantity:
+    if quantity:
+        offset_value = randrange(quantity)
+        opinion = Opinion.query.offset(offset_value).first()
+        return opinion
+
+
+@app.route('/')
+def index_view():
+    opinion = random_opinion()
+    if opinion is None:
         abort(500)
-    offset_value = randrange(quantity)
-    opinion = Opinion.query.offset(offset_value).first()
     return render_template('opinion.html', opinion=opinion)
 
 
